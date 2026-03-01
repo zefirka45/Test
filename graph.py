@@ -11,6 +11,7 @@ load_dotenv()
 # 1. Определение состояния графа
 class GraphState(TypedDict):
     word: str
+    kind: str
     result: List[dict]
 
 # 2. Инициализация модели
@@ -19,11 +20,12 @@ llm = ChatOpenAI(model="deepseek-chat", temperature=0)
 # 3. Функция узла (Node)
 def generate_words_node(state: GraphState) -> GraphState:
     word = state["word"]
+    kind = state["kind"]
     
-    # Создаем промпт для получения И синонимов, И антонимов
+    # Создаем промпт (убраны пробелы в ключах ролей)
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Ты лингвистический ассистент. Твоя задача - предоставить ровно 10 синонимов и 10 антонимов к заданному слову. Всего 20 слов."),
-        ("user", "Слово: {word}. Верни ответ строго в формате JSON списка объектов с полями 'word' и 'type' (где type это 'synonym' или 'antonym').")
+        ("system", "Ты лингвистический ассистент. Твоя задача - предоставить ровно 10 {kind} к слову."),
+        ("user", "Слово: {word}. Верни ответ строго в формате JSON списка объектов с полями 'word' и 'type'.")
     ])
 
     # Используем with_structured_output для гарантии JSON формата
@@ -32,7 +34,7 @@ def generate_words_node(state: GraphState) -> GraphState:
 
     try:
         # Исправлено: ключи без пробелов соответствуют плейсхолдерам в промпте
-        response = chain.invoke({"word": word})
+        response = chain.invoke({"word": word, "kind": kind})
         
         # Преобразуем Pydantic модели в словари
         result_data = [item.model_dump() for item in response.items]

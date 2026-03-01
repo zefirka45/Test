@@ -6,9 +6,10 @@ app = FastAPI(title="Synonyms & Antonyms API")
 
 @app.post("/get-words", response_model=APIResponse)
 async def get_words(request: UserRequest):
-    # Подготовка начального состояния (убрано поле kind)
+    # Подготовка начального состояния для графа
     initial_state = {
         "word": request.word,
+        "kind": request.type.value,
         "result": []
     }
     try:
