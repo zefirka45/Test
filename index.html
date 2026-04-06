@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREEN-API Client</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 25px;
+        }
+        h1 {
+            text-align: center;
+            color: #25D366;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+        }
+        .section {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #495057;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #25D366;
+            padding-bottom: 8px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #25D366;
+            box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.15);
+        }
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #25D366;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+        button:hover {
+            background: #128C7E;
+            transform: translateY(-1px);
+        }
+        button:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+            transform: none;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.secondary:hover {
+            background: #5a6268;
+        }
+        .response-area {
+            margin-top: 15px;
+        }
+        .response-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        .response-output {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            background: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            white-space: pre-wrap;
+            word-break: break-all;
+            color: #212529;
+            resize: vertical;
+        }
+        .response-output:read-only {
+            background: #f8f9fa;
+        }
+        .status {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .hint {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #25D366;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+        @media (max-width: 600px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🟢 GREEN-API Client</h1>
+        
+        <!-- Connection Settings -->
+        <div class="section">
+            <div class="section-title">🔑 Параметры подключения</div>
+            <div class="form-row">
+                <div>
+                    <label for="idInstance">idInstance</label>
+                    <input type="text" id="idInstance" placeholder="1101000001">
+                </div>
+                <div>
+                    <label for="apiTokenInstance">ApiTokenInstance</label>
+                    <input type="password" id="apiTokenInstance" placeholder="d75b3a66374942c5b3c019c698abc2067e151558acbd451234">
+                </div>
+            </div>
+            <div class="form-row single">
+                <div>
+                    <label for="apiUrl">API URL (опционально)</label>
+                    <input type="text" id="apiUrl" value="https://api.greenapi.com" placeholder="https://api.greenapi.com">
+                    <div class="hint">Оставьте по умолчанию, если не используете кастомный endpoint</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- getSettings -->
+        <div class="section">
+            <div class="section-title">⚙️ Метод: getSettings</div>
+            <div class="btn-group">
+                <button onclick="callGetSettings()">📥 getSettings</button>
+            </div>
+            <div class="response-area">
+                <div class="response-label">Ответ:</div>
+                <textarea id="response-getSettings" class="response-output" readonly placeholder="Ответ от API появится здесь..."></textarea>
+            </div>
+        </div>
+
+        <!-- getStateInstance -->
+        <div class="section">
+            <div class="section-title">📊 Метод: getStateInstance</div>
+            <div class="btn-group">
+                <button onclick="callGetStateInstance()">🔄 getStateInstance</button>
+            </div>
+            <div class="response-area">
+                <div class="response-label">Ответ:</div>
+                <textarea id="response-getStateInstance" class="response-output" readonly placeholder="Ответ от API появится здесь..."></textarea>
+            </div>
+        </div>
+
+        <!-- sendMessage -->
+        <div class="section">
+            <div class="section-title">💬 Метод: sendMessage</div>
+            <div class="form-row">
+                <div>
+                    <label for="sendChatId">chatId</label>
+                    <input type="text" id="sendChatId" placeholder="79876543210@c.us">
+                    <div class="hint">Формат: номер_телефона@c.us (личный) или id_группы@g.us</div>
+                </div>
+            </div>
+            <div class="form-row single">
+                <div>
+                    <label for="sendMessage">Текст сообщения</label>
+                    <textarea id="sendMessage" placeholder="Введите текст сообщения..."></textarea>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button onclick="callSendMessage()">📤 sendMessage</button>
+            </div>
+            <div class="response-area">
+                <div class="response-label">Ответ:</div>
+                <textarea id="response-sendMessage" class="response-output" readonly placeholder="Ответ от API появится здесь..."></textarea>
+            </div>
+        </div>
+
+        <!-- sendFileByUrl -->
+        <div class="section">
+            <div class="section-title">📎 Метод: sendFileByUrl</div>
+            <div class="form-row">
+                <div>
+                    <label for="fileChatId">chatId</label>
+                    <input type="text" id="fileChatId" placeholder="79876543210@c.us">
+                </div>
+                <div>
+                    <label for="fileName">Имя файла</label>
+                    <input type="text" id="fileName" placeholder="image.jpg">
+                </div>
+            </div>
+            <div class="form-row single">
+                <div>
+                    <label for="urlFile">URL файла</label>
+                    <input type="url" id="urlFile" placeholder="https://example.com/file.jpg">
+                </div>
+            </div>
+            <div class="form-row single">
+                <div>
+                    <label for="fileCaption">Подпись (опционально)</label>
+                    <input type="text" id="fileCaption" placeholder="Описание файла...">
+                </div>
+            </div>
+            <div class="btn-group">
+                <button onclick="callSendFileByUrl()">📤 sendFileByUrl</button>
+            </div>
+            <div class="response-area">
+                <div class="response-label">Ответ:</div>
+                <textarea id="response-sendFileByUrl" class="response-output" readonly placeholder="Ответ от API появится здесь..."></textarea>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>GREEN-API Test Client • Разработано для тестового задания</p>
+            <p style="margin-top: 5px;">
+                <a href="https://green-api.com" target="_blank" style="color: #25D366; text-decoration: none;">Документация GREEN-API</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://api.greenapi.com';
+        
+        // Вспомогательная функция для выполнения запросов
+        async function apiRequest(endpoint, method = 'GET', body = null) {
+            const idInstance = document.getElementById('idInstance').value.trim();
+            const apiTokenInstance = document.getElementById('apiTokenInstance').value.trim();
+            const apiUrl = document.getElementById('apiUrl').value.trim() || API_BASE;
+            
+            if (!idInstance || !apiTokenInstance) {
+                alert('⚠️ Пожалуйста, заполните idInstance и ApiTokenInstance');
+                return null;
+            }
+            
+            const url = `${apiUrl}/waInstance${idInstance}/${endpoint}/${apiTokenInstance}`;
+            
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+            
+            try {
+                const response = await fetch(url, options);
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, data: { error: error.message }, status: 0 };
+            }
+        }
+        
+        // Функция для отображения ответа
+        function displayResponse(elementId, result) {
+            const output = document.getElementById(elementId);
+            if (result.success) {
+                output.value = JSON.stringify(result.data, null, 2);
+            } else {
+                output.value = `❌ Ошибка (${result.status}):\n${JSON.stringify(result.data, null, 2)}`;
+            }
+        }
+        
+        // === Методы API ===
+        
+        async function callGetSettings() {
+            const result = await apiRequest('getSettings', 'GET');
+            if (result) displayResponse('response-getSettings', result);
+        }
+        
+        async function callGetStateInstance() {
+            const result = await apiRequest('getStateInstance', 'GET');
+            if (result) displayResponse('response-getStateInstance', result);
+        }
+        
+        async function callSendMessage() {
+            const chatId = document.getElementById('sendChatId').value.trim();
+            const message = document.getElementById('sendMessage').value.trim();
+            
+            if (!chatId || !message) {
+                alert('⚠️ Пожалуйста, заполните chatId и текст сообщения');
+                return;
+            }
+            
+            const body = { chatId, message };
+            const result = await apiRequest('sendMessage', 'POST', body);
+            if (result) displayResponse('response-sendMessage', result);
+        }
+        
+        async function callSendFileByUrl() {
+            const chatId = document.getElementById('fileChatId').value.trim();
+            const urlFile = document.getElementById('urlFile').value.trim();
+            const fileName = document.getElementById('fileName').value.trim();
+            const caption = document.getElementById('fileCaption').value.trim();
+            
+            if (!chatId || !urlFile || !fileName) {
+                alert('⚠️ Пожалуйста, заполните chatId, URL файла и имя файла');
+                return;
+            }
+            
+            const body = { chatId, urlFile, fileName };
+            if (caption) body.caption = caption;
+            
+            const result = await apiRequest('sendFileByUrl', 'POST', body);
+            if (result) displayResponse('response-sendFileByUrl', result);
+        }
+        
+        // Сохранение параметров в localStorage для удобства
+        document.addEventListener('DOMContentLoaded', () => {
+            ['idInstance', 'apiTokenInstance', 'apiUrl'].forEach(id => {
+                const el = document.getElementById(id);
+                const saved = localStorage.getItem(`greenapi_${id}`);
+                if (saved) el.value = saved;
+                el.addEventListener('change', () => {
+                    localStorage.setItem(`greenapi_${id}`, el.value);
+                });
+            });
+        });
+    </script>
+</body>
+</html>
